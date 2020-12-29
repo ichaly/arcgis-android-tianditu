@@ -16,16 +16,10 @@
 #   public *;
 #}
 
-# ArcGIS Android
--keep class com.esri.** { *; }
--keep interface com.esri.** { *; }
--keep class org.codehaus.jackson.** { *; }
--dontwarn org.codehaus.jackson.map.ext.**
--dontwarn jcifs.http.**
-
-# Tianditu
--keep class com.wshunli.map.tianditu.* { *;}
--keepclassmembers enum * {
-    public static **[] values();
-    public static ** valueOf(java.lang.String);
+-keep class com.wshunli.map.tianditu.TianDiTuLayer {
+    public TianDiTuLayer(com.esri.arcgisruntime.arcgisservices.TileInfo, com.esri.arcgisruntime.geometry.Envelope);
 }
+-keep class com.wshunli.map.tianditu.TianDiTuLayerTypes { *;}
+-keep class com.wshunli.map.tianditu.TianDiTuLayerBuilder { *;}
+
+

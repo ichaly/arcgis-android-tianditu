@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 wshunli
+ * Copyright 2017 wshunli
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,115 +15,151 @@
  */
 package com.wshunli.map.tianditu;
 
-import android.content.Context;
+
 import android.util.Log;
 
 import com.esri.arcgisruntime.arcgisservices.TileInfo;
-import com.esri.arcgisruntime.io.RequestConfiguration;
-import com.esri.arcgisruntime.layers.WebTiledLayer;
+import com.esri.arcgisruntime.data.TileKey;
+import com.esri.arcgisruntime.geometry.Envelope;
+import com.esri.arcgisruntime.layers.ImageTiledLayer;
 
-public class TianDiTuLayer {
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class TianDiTuLayer extends ImageTiledLayer {
 
     private static final String TAG = "TianDiTuLayer";
 
-    private Context context = null;
-    private String key = null;
+    private int layerType = 0;
     private String cachePath = null;
+    private TianDiTuLayerInfo layerInfo;
+    private String token = null;
 
-    private TianDiTuLayer() {
+    public TianDiTuLayer(TileInfo tileInfo, Envelope fullExtent) {
+        super(tileInfo, fullExtent);
     }
 
-    private volatile static TianDiTuLayer instance = null;
+    @Override
+    protected byte[] getTile(TileKey tileKey) {
 
-    public static TianDiTuLayer getInstance() {
-        if (instance == null) {
-            synchronized (TianDiTuLayer.class) {
-                if (instance == null) {
-                    instance = new TianDiTuLayer();
-                }
+        if (this.getToken() == null) {
+            Log.e(TAG, "Please set the token value. See http://lbs.tianditu.gov.cn/authorization/authorization.html");
+        }
+        int level = tileKey.getLevel();
+        int col = tileKey.getColumn();
+        int row = tileKey.getRow();
+        if (level > layerInfo.getMaxZoomLevel()
+                || level < layerInfo.getMinZoomLevel())
+            return new byte[0];
+        byte[] bytes = null;
+        if (cachePath != null)
+            bytes = getOfflineCacheFile(cachePath, level, col, row);
+        if (bytes == null) {
+            String url = layerInfo.getUrl()
+                    + "?service=wmts&request=gettile&version=1.0.0&tk=" + token + "&layer="
+                    + layerInfo.getLayerName() + "&format=tiles&tilematrixset="
+                    + layerInfo.getTileMatrixSet() + "&tilecol=" + col
+                    + "&tilerow=" + row + "&tilematrix=" + (level);
+
+            try {
+                HttpURLConnection httpConnection = (HttpURLConnection) new URL(url).openConnection();
+                httpConnection.setRequestMethod("GET");
+                httpConnection.setConnectTimeout(5000);
+                InputStream in = httpConnection.getInputStream();
+                bytes = getBytes(in);
+                httpConnection.disconnect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (cachePath != null) {
+                AddOfflineCacheFile(cachePath, level, col, row, bytes);
+            }
+
+        }
+        return bytes;
+    }
+
+
+    // 保存切片到本地
+    private void AddOfflineCacheFile(String cachePath, int level, int col, int row, byte[] bytes) {
+
+        File file = new File(cachePath);
+        if (!file.exists()) file.mkdirs();
+        File levelFile = new File(cachePath + "/" + level);
+        if (!levelFile.exists()) levelFile.mkdirs();
+        File rowFile = new File(cachePath + "/" + level + "/" + col + "x" + row
+                + ".tdt");
+
+        if (!rowFile.exists()) {
+            try {
+                FileOutputStream out = new FileOutputStream(rowFile);
+                out.write(bytes);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
-        return instance;
+
     }
 
-    // 初始化
-    public void init(Context context, String key) {
-        if (context == null || key == null || key.isEmpty()) {
-            throw new NullPointerException();
+    // 从本地获取切片
+    private byte[] getOfflineCacheFile(String cachePath, int level, int col, int row) {
+        byte[] bytes = null;
+        File rowFile = new File(cachePath + "/" + level + "/" + col + "x" + row
+                + ".tdt");
+        if (rowFile.exists()) {
+            try {
+                FileInputStream in = new FileInputStream(rowFile);
+                bytes = getBytes(in);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            bytes = null;
         }
-        this.init(context, key, getDefaultCachePath(context));
+        return bytes;
     }
 
-    // 初始化
-    public void init(Context context, String key, String cachePath) {
-        if (context == null) {
-            Log.e(TAG, "context is null, please check it");
-            throw new NullPointerException();
+    // 读取字节数组
+    private byte[] getBytes(InputStream is) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
+        byte[] temp = new byte[1024];
+        int size;
+        while ((size = is.read(temp)) != -1) {
+            out.write(temp, 0, size);
         }
-        if (key == null || key.isEmpty()) {
-            Log.e(TAG, "Please set the key value. See http://lbs.tianditu.gov.cn/authorization/authorization.html");
-            throw new NullPointerException();
-        }
-        if (cachePath == null || cachePath.isEmpty()) {
-            Log.w(TAG, "cachePath is null or empty , set default value");
-            cachePath = getDefaultCachePath(context);
-        }
-        this.context = context;
-        this.key = key;
-        this.cachePath = cachePath;
-        Log.i(TAG, "init key: " + key);
+        is.close();
+        out.flush();
+        return out.toByteArray();
     }
 
-    /**
-     * 获取 WebTiledLayer 图层
-     *
-     * @param layerType        天地图图层类型
-     * @param spatialReference 天地图坐标系
-     * @return ArcGIS Android 对应图层
-     */
-    public WebTiledLayer getLayer(TianDiTuLayerType layerType, TianDiTuLayerType.SR spatialReference) {
-
-        if (layerType == null) {
-            Log.e(TAG, "layerType is null, please check it");
-            throw new NullPointerException();
-        }
-
-        if (spatialReference == null) {
-            Log.e(TAG, "spatialReference is null, please check it");
-            throw new NullPointerException();
-        }
-
-        // 图层信息
-        String templateUri = layerType.getTemplateUri(spatialReference);
-        TileInfo tileInfo = layerType.getTileInfo(spatialReference);
-        // 创建图层
-        WebTiledLayer webTiledLayer = new WebTiledLayer(
-                templateUri + "&tk=" + key,
-                TianDiTuLayerConstants.SUB_DOMAIN,
-                tileInfo,
-                spatialReference.getEnvelope());
-        webTiledLayer.setName(layerType.getValue() + "_" + spatialReference.getValue());
-        // 配置请求头
-        RequestConfiguration requestConfiguration = new RequestConfiguration();
-        requestConfiguration.getHeaders().put("referer", "https://www.tianditu.gov.cn/");
-        webTiledLayer.setRequestConfiguration(requestConfiguration);
-        return webTiledLayer;
+    public int getLayerType() {
+        return layerType;
     }
 
-    private Context getContext() {
-        return context;
+    public void setLayerType(int layerType) {
+        this.layerType = layerType;
+        this.layerInfo = LayerInfoFactory.getLayerInfo(layerType);
     }
 
-    private String getToken() {
-        return key;
-    }
-
-    private String getCachePath() {
+    public String getCachePath() {
         return cachePath;
     }
 
-    private String getDefaultCachePath(Context context) {
-        return context.getCacheDir().getAbsolutePath() + "/tdt";
+    public void setCachePath(String cachePath) {
+        this.cachePath = cachePath == null ? null : cachePath + "/" + layerInfo.getLayerName() + "_" + layerInfo.getTileMatrixSet() + "/";
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 }

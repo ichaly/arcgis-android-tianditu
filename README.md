@@ -11,14 +11,6 @@
 :-: | :-: | :-:
 矢量 | 影像 | 地形
 
-## 天地图授权
-
-天地图于 2019年1月1日 停止对无开发许可（Key）使用应用程序开发接口或者调用在线服务的支持。
-
-http://lbs.tianditu.gov.cn/authorization/authorization.html
-
-请参考以上内容申请 token 值，以继续使用本依赖。
-
 ## 依赖
 
 ### ArcGIS for Android 依赖
@@ -48,7 +40,7 @@ arcgis-android-tianditu 已经发布至 jcenter ，确定项目已配置 jcenter
 ```groovy
 // 添加 arcgis-android-tianditu 依赖
 dependencies {
-    implementation 'com.wshunli.map:arcgis-android-tianditu:2.2.1'
+    implementation 'com.wshunli.map:arcgis-android-tianditu:2.1.0'
 }
 ```
 
@@ -70,73 +62,51 @@ dependencies {
 
 针对 Android 6.0+ 以上版本, 注意运行时权限请求。
 
-### 初始化
+### 天地图授权
 
-``` Java
-// 初始化
-TianDiTuLayer.getInstance().init(this, "TDT_KEY");
-```
+天地图于 2019年1月1日 停止对无开发许可（Key）使用应用程序开发接口或者调用在线服务的支持。
 
-建议在 Application 实现类中初始化，比如：
+http://lbs.tianditu.gov.cn/authorization/authorization.html
 
-``` Java
-public class App extends Application {
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        // 简单初始化
-        TianDiTuLayer.getInstance().init(this, "TDT_KEY");
-    }
-}
-```
+请参考以上内容申请 token 值，以继续使用本依赖。
 
 ### 简单示例
 
 ``` Java
 MapView mMapView = findViewById(R.id.mapView);
-WebTiledLayer webTiledLayer = TianDiTuLayer.getInstance().getLayer(
-        TianDiTuLayerType.VECTOR,
-        TianDiTuLayerType.SR.ID_2000
-);
-Basemap basemap = new Basemap(webTiledLayer);
-mMapView.setMap(new ArcGISMap(basemap));
+ArcGISMap map = new ArcGISMap();
+TianDiTuLayer vec_c = new TianDiTuLayerBuilder()
+    .setLayerType(TianDiTuLayerTypes.TIANDITU_VECTOR_MERCATOR)
+    .setToken("2ce94f67e58faa24beb7cb8a09780552")
+    .build();
+map.getBasemap().getBaseLayers().add(vec_c);
+mMapView.setMap(map);
 ```
 
 ### 缓存切片
 
-暂不支持
+指定缓存位置即可缓存切片。
 
-## 支持图层类型
+``` Java
+MapView mMapView = findViewById(R.id.mapView);
+ArcGISMap map = new ArcGISMap();
+String cachePath = Environment.getExternalStorageDirectory().getAbsoluteFile() + "/TianDiTu100Cache";
+TianDiTuLayer vec_c = new TianDiTuLayerBuilder()
+    .setLayerType(TianDiTuLayerTypes.TIANDITU_VECTOR_MERCATOR)
+    .setCachePath(cachePath)
+    .setToken("2ce94f67e58faa24beb7cb8a09780552")
+    .build();
+map.getBasemap().getBaseLayers().add(vec_c);
+mMapView.setMap(map);
+```
 
-支持切片图层：
-
-切片类型 | 对应字段 | 
-:-: | :-: 
-矢量切片图层 | TianDiTuLayerType.VECTOR 
-影像切片图层 | TianDiTuLayerType.IMAGE 
-地形切片图层 | TianDiTuLayerType.TERRAIN 
-
-支持标注图层：
-
-切片类型 | 对应中文标注 | 对应英文标注 | 
-:-: | :-: | :-: 
-矢量切片图层 | TianDiTuLayerType.VECTOR_ANNOTATION_CN | TianDiTuLayerType.VECTOR_ANNOTATION_CN
-影像切片图层 | TianDiTuLayerType.IMAGE_ANNOTATION_CN | TianDiTuLayerType.IMAGER_ANNOTATION_CN
-地形切片图层 | TianDiTuLayerType.TERRAIN_ANNOTATION_CN | 暂不支持
-
-支持坐标系：
-
-坐标系类型 | 对应字段 | 
-:-: | :-: 
-国家 2000 坐标系 | TianDiTuLayerType.SR.ID_2000
-墨卡托投影 | TianDiTuLayerType.SR.ID_1021000
-
+## 更多
 
 更多信息可以查看 [示例](https://github.com/wshunli/arcgis-android-tianditu/tree/master/sample)
 
 ## 10.X 版本
 
-（不推荐）针对 ArcGIS for Android 10.2.9 及以前的版本，请参考 [README.10.X](README.10.X.md) 
+（不推荐）针对 ArcGIS for Android 10.2.9 及以前的版本，请参考 [README_zh_CN.10.X](README_zh_CN.10.X.md) 
 
 
 ## License
