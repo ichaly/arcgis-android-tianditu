@@ -17,14 +17,16 @@ package com.wshunli.map.tianditu.sample;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.wshunli.map.tianditu.TianDiTuLayerTypes;
 
@@ -107,13 +109,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public MapsAdapter.TextViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public TextViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_map, parent, false);
             return new TextViewHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(MapsAdapter.TextViewHolder holder, int position) {
+        public void onBindViewHolder(TextViewHolder holder, int position) {
             holder.map_title.setText(titles.get(position));
         }
 

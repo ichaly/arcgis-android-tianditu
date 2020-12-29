@@ -23,25 +23,25 @@ import com.esri.arcgisruntime.geometry.SpatialReference;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LayerInfoFactory {
+class LayerInfoFactory {
 
-    private static final String URL_VECTOR_2000 = "http://t0.tianditu.com/vec_c/wmts";
-    private static final String URL_VECTOR_ANNOTATION_CHINESE_2000 = "http://t0.tianditu.com/cva_c/wmts";
-    private static final String URL_VECTOR_ANNOTATION_ENGLISH_2000 = "http://t0.tianditu.com/eva_c/wmts";
-    private static final String URL_IMAGE_2000 = "http://t0.tianditu.com/img_c/wmts";
-    private static final String URL_IMAGE_ANNOTATION_CHINESE_2000 = "http://t0.tianditu.com/cia_c/wmts";
-    private static final String URL_IMAGE_ANNOTATION_ENGLISH_2000 = "http://t0.tianditu.com/cia_c/wmts";
-    private static final String URL_TERRAIN_2000 = "http://t0.tianditu.com/ter_c/wmts";
-    private static final String URL_TERRAIN_ANNOTATION_CHINESE_2000 = "http://t0.tianditu.com/cta_c/wmts";
+    private static final String URL_VECTOR_2000 = "https://t0.tianditu.gov.cn/vec_c/wmts";
+    private static final String URL_VECTOR_ANNOTATION_CHINESE_2000 = "https://t0.tianditu.gov.cn/cva_c/wmts";
+    private static final String URL_VECTOR_ANNOTATION_ENGLISH_2000 = "https://t0.tianditu.gov.cn/eva_c/wmts";
+    private static final String URL_IMAGE_2000 = "https://t0.tianditu.gov.cn/img_c/wmts";
+    private static final String URL_IMAGE_ANNOTATION_CHINESE_2000 = "https://t0.tianditu.gov.cn/cia_c/wmts";
+    private static final String URL_IMAGE_ANNOTATION_ENGLISH_2000 = "https://t0.tianditu.gov.cn/cia_c/wmts";
+    private static final String URL_TERRAIN_2000 = "https://t0.tianditu.gov.cn/ter_c/wmts";
+    private static final String URL_TERRAIN_ANNOTATION_CHINESE_2000 = "https://t0.tianditu.gov.cn/cta_c/wmts";
 
-    private static final String URL_VECTOR_MERCATOR = "http://t0.tianditu.com/vec_w/wmts";
-    private static final String URL_VECTOR_ANNOTATION_CHINESE_MERCATOR = "http://t0.tianditu.com/cva_w/wmts";
-    private static final String URL_VECTOR_ANNOTATION_ENGLISH_MERCATOR = "http://t0.tianditu.com/eva_w/wmts";
-    private static final String URL_IMAGE_MERCATOR = "http://t0.tianditu.com/img_w/wmts";
-    private static final String URL_IMAGE_ANNOTATION_CHINESE_MERCATOR = "http://t0.tianditu.com/cia_w/wmts";
-    private static final String URL_IMAGE_ANNOTATION_ENGLISH_MERCATOR = "http://t0.tianditu.com/cia_w/wmts";
-    private static final String URL_TERRAIN_MERCATOR = "http://t0.tianditu.com/ter_w/wmts";
-    private static final String URL_TERRAIN_ANNOTATION_CHINESE_MERCATOR = "http://t0.tianditu.com/cta_w/wmts";
+    private static final String URL_VECTOR_MERCATOR = "https://t0.tianditu.gov.cn/vec_w/wmts";
+    private static final String URL_VECTOR_ANNOTATION_CHINESE_MERCATOR = "https://t0.tianditu.gov.cn/cva_w/wmts";
+    private static final String URL_VECTOR_ANNOTATION_ENGLISH_MERCATOR = "https://t0.tianditu.gov.cn/eva_w/wmts";
+    private static final String URL_IMAGE_MERCATOR = "https://t0.tianditu.gov.cn/img_w/wmts";
+    private static final String URL_IMAGE_ANNOTATION_CHINESE_MERCATOR = "https://t0.tianditu.gov.cn/cia_w/wmts";
+    private static final String URL_IMAGE_ANNOTATION_ENGLISH_MERCATOR = "https://t0.tianditu.gov.cn/cia_w/wmts";
+    private static final String URL_TERRAIN_MERCATOR = "https://t0.tianditu.gov.cn/ter_w/wmts";
+    private static final String URL_TERRAIN_ANNOTATION_CHINESE_MERCATOR = "https://t0.tianditu.gov.cn/cta_w/wmts";
 
     private static final String LAYER_NAME_VECTOR = "vec";
     private static final String LAYER_NAME_VECTOR_ANNOTATION_CHINESE = "cva";
@@ -107,7 +107,7 @@ public class LayerInfoFactory {
         lods.add(new LevelOfDetail(3, 19567.87924100512, 7.39573388636414E7));
         lods.add(new LevelOfDetail(4, 9783.93962050256, 3.69786694318207E7));
         lods.add(new LevelOfDetail(5, 4891.96981025128, 1.848933471591035E7));
-        lods.add(new LevelOfDetail(6, 72445.98490512564, 9244667.35795517));
+        lods.add(new LevelOfDetail(6, 2445.98490512564, 9244667.35795517));
         lods.add(new LevelOfDetail(7, 1222.99245256282, 4622333.678977588));
         lods.add(new LevelOfDetail(8, 611.49622628141, 2311166.839488794));
         lods.add(new LevelOfDetail(9, 305.748113140705, 1155583.419744397));

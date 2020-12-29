@@ -16,8 +16,8 @@
 package com.wshunli.map.tianditu.sample;
 
 import android.os.Bundle;
-import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
@@ -26,6 +26,7 @@ import com.wshunli.map.tianditu.TianDiTuLayer;
 import com.wshunli.map.tianditu.TianDiTuLayerBuilder;
 
 public class TianDiTuActivity extends AppCompatActivity {
+    private static final String TAG = "TianDiTuActivity";
 
     private MapView mMapView;
     private TianDiTuLayer vec_c;
@@ -36,13 +37,10 @@ public class TianDiTuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tianditu);
 
-        int[] tianditu_layers = getIntent().getIntArrayExtra("TIANDITU_LAYERS");
-        if ((tianditu_layers == null) || (tianditu_layers.length == 0)) {
-            tianditu_layers = new int[]{0, 1};
+        int[] tdtLayers = getIntent().getIntArrayExtra("TIANDITU_LAYERS");
+        if ((tdtLayers == null) || (tdtLayers.length == 0)) {
+            tdtLayers = new int[]{0, 1};
         }
-
-        //String cachePath = getCacheDir().getAbsolutePath() + "/TianDiTu100Cache";
-        String cachePath = Environment.getExternalStorageDirectory().getAbsoluteFile() + "/TianDiTu100Cache";
 
         mMapView = findViewById(R.id.mapView);
         //去除水印
@@ -53,13 +51,10 @@ public class TianDiTuActivity extends AppCompatActivity {
         ArcGISMap map = new ArcGISMap();
 
         vec_c = new TianDiTuLayerBuilder()
-                .setLayerType(tianditu_layers[0])
-                //.setCachePath(cachePath)
-                .setToken("471bc0a0e0e2027b388a4d7db8e38cc7")
+                .setLayerType(tdtLayers[0])
                 .build();
         cva_c = new TianDiTuLayerBuilder()
-                .setLayerType(tianditu_layers[1])
-                .setToken("471bc0a0e0e2027b388a4d7db8e38cc7")
+                .setLayerType(tdtLayers[1])
                 .build();
 
         map.getBasemap().getBaseLayers().add(vec_c);
