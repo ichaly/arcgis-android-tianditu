@@ -118,6 +118,8 @@ public class TianDiTuLayer extends ImageTiledLayer {
             try {
                 FileOutputStream out = new FileOutputStream(rowFile);
                 out.write(bytes);
+                out.flush();
+                out.close();
             } catch (Exception e) {
                 e.printStackTrace();
             }
