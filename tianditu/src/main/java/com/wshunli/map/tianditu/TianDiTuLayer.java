@@ -32,9 +32,8 @@ import java.net.URL;
 
 public class TianDiTuLayer extends ImageTiledLayer {
 
-    private TianDiTuLayerInfo layerInfo;
     private String token = getToken();
-    private String cachePath;
+    private TianDiTuLayerInfo layerInfo;
 
     public TianDiTuLayer(TileInfo tileInfo, Envelope fullExtent) {
         super(tileInfo, fullExtent);
@@ -49,45 +48,20 @@ public class TianDiTuLayer extends ImageTiledLayer {
             return new byte[0];
         }
         byte[] bytes = null;
-        cachePath = getCachePath();
-        StringBuffer tileUrlBuffer = new StringBuffer();
-        tileUrlBuffer.append(layerInfo.getUrl())
-            .append("?service=wmts&request=gettile&version=1.0.0&tk=").append(token)
-            .append("&layer=").append(layerInfo.getLayerName())
-            .append("&format=tiles&tilematrixset=").append(layerInfo.getTileMatrixSet())
-            .append("&tilecol=").append(col)
-            .append("&tilerow=").append(row)
-            .append("&tilematrix=").append(level);
-
-        //FutureTarget<File> submit = Glide
-        //        .with(TianDiTuInitialer.getInstance().getContext())
-        //        .asFile()
-        //        .load(tileUrlBuffer.toString())
-        //        .submit();
-        //tileUrlBuffer.setLength(0);
-        //
-        //try {
-        //    File file = submit.get();
-        //    try {
-        //        FileInputStream inputStream = new FileInputStream(file);
-        //        bytes = getBytes(inputStream);
-        //    } catch (IOException e) {
-        //        e.printStackTrace();
-        //    }
-        //} catch (ExecutionException | InterruptedException e) {
-        //    e.printStackTrace();
-        //}
+        String cachePath = getCachePath();
         if (cachePath != null) {
             bytes = getOfflineCacheFile(cachePath, level, col, row);
         }
         if (bytes == null) {
-            String url = layerInfo.getUrl()
-                + "?service=wmts&request=gettile&version=1.0.0&tk=" + token + "&layer="
-                + layerInfo.getLayerName() + "&format=tiles&tilematrixset="
-                + layerInfo.getTileMatrixSet() + "&tilecol=" + col
-                + "&tilerow=" + row + "&tilematrix=" + (level);
+            StringBuilder url = new StringBuilder().append(layerInfo.getUrl())
+                .append("?service=wmts&request=gettile&version=1.0.0&tk=").append(token)
+                .append("&layer=").append(layerInfo.getLayerName())
+                .append("&format=tiles&tilematrixset=").append(layerInfo.getTileMatrixSet())
+                .append("&tilecol=").append(col)
+                .append("&tilerow=").append(row)
+                .append("&tilematrix=").append(level);
             try {
-                HttpURLConnection httpConnection = (HttpURLConnection) new URL(url).openConnection();
+                HttpURLConnection httpConnection = (HttpURLConnection) new URL(url.toString()).openConnection();
                 httpConnection.setRequestMethod("GET");
                 httpConnection.setConnectTimeout(5000);
                 InputStream in = httpConnection.getInputStream();
@@ -97,14 +71,14 @@ public class TianDiTuLayer extends ImageTiledLayer {
                 e.printStackTrace();
             }
             if (cachePath != null) {
-                AddOfflineCacheFile(cachePath, level, col, row, bytes);
+                addOfflineCacheFile(cachePath, level, col, row, bytes);
             }
         }
         return bytes;
     }
 
     // 保存切片到本地
-    private void AddOfflineCacheFile(String cachePath, int level, int col, int row, byte[] bytes) {
+    private void addOfflineCacheFile(String cachePath, int level, int col, int row, byte[] bytes) {
         File file = new File(cachePath);
         if (!file.exists()) {
             file.mkdirs();
@@ -137,8 +111,6 @@ public class TianDiTuLayer extends ImageTiledLayer {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else {
-            bytes = null;
         }
         return bytes;
     }
@@ -166,6 +138,9 @@ public class TianDiTuLayer extends ImageTiledLayer {
 
     private String getCachePath() {
         String initPath = TianDiTuInitialer.getInstance().getCachePath();
-        return initPath + "/" + layerInfo.getLayerName() + "_" + layerInfo.getTileMatrixSet() + "/";
+        if (initPath != null && initPath.trim().length() > 0) {
+            return initPath + "/" + layerInfo.getLayerName() + "_" + layerInfo.getTileMatrixSet() + "/";
+        }
+        return null;
     }
 }
