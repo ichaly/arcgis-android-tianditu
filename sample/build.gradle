@@ -51,10 +51,14 @@ android {
             dirs 'libs' //this way we can find the .aar file in libs folder
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
-    implementation "androidx.appcompat:appcompat:1.1.0"
+    implementation "androidx.appcompat:appcompat:1.2.0"
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
     implementation project(':tianditu')

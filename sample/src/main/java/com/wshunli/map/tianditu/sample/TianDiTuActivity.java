@@ -15,22 +15,26 @@
  */
 package com.wshunli.map.tianditu.sample;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
+import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.wshunli.map.tianditu.TianDiTuLayer;
 import com.wshunli.map.tianditu.TianDiTuLayerBuilder;
 
 public class TianDiTuActivity extends AppCompatActivity {
-    private static final String TAG = "TianDiTuActivity";
 
     private MapView mMapView;
     private TianDiTuLayer vec_c;
     private TianDiTuLayer cva_c;
+    private LocationDisplay mLocationDisplay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,17 +54,32 @@ public class TianDiTuActivity extends AppCompatActivity {
 
         ArcGISMap map = new ArcGISMap();
 
-        vec_c = new TianDiTuLayerBuilder()
-                .setLayerType(tdtLayers[0])
-                .build();
-        cva_c = new TianDiTuLayerBuilder()
-                .setLayerType(tdtLayers[1])
-                .build();
+        vec_c = new TianDiTuLayerBuilder().setLayerType(tdtLayers[0]).build();
+        cva_c = new TianDiTuLayerBuilder().setLayerType(tdtLayers[1]).build();
 
         map.getBasemap().getBaseLayers().add(vec_c);
         map.getBasemap().getBaseLayers().add(cva_c);
 
         mMapView.setMap(map);
+
+        mLocationDisplay = mMapView.getLocationDisplay();
+        mLocationDisplay.addDataSourceStatusChangedListener(dataSourceStatusChangedEvent -> {
+            if (dataSourceStatusChangedEvent.isStarted() || dataSourceStatusChangedEvent.getError() == null) {
+                return;
+            }
+            int requestPermissionsCode = 2;
+            String[] requestPermissions = new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
+            if (!(ContextCompat.checkSelfPermission(TianDiTuActivity.this, requestPermissions[0]) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(TianDiTuActivity.this, requestPermissions[1]) == PackageManager.PERMISSION_GRANTED)) {
+                ActivityCompat.requestPermissions(TianDiTuActivity.this, requestPermissions, requestPermissionsCode);
+            } else {
+                String message = String.format("Error in DataSourceStatusChangedListener: %s",
+                    dataSourceStatusChangedEvent.getSource().getLocationDataSource().getError().getMessage());
+                Toast.makeText(TianDiTuActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+        });
+        mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.NAVIGATION);
+        mLocationDisplay.startAsync();
     }
 
     @Override
