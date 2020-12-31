@@ -16,31 +16,42 @@
 package com.wshunli.map.tianditu.sample;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
+import com.esri.arcgisruntime.geometry.Point;
+import com.esri.arcgisruntime.geometry.SpatialReference;
+import com.esri.arcgisruntime.location.LocationDataSource;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.wshunli.map.tianditu.TianDiTuLayer;
 import com.wshunli.map.tianditu.TianDiTuLayerBuilder;
 
+import java.util.List;
+
 public class TianDiTuActivity extends AppCompatActivity {
 
     private MapView mMapView;
     private TianDiTuLayer vec_c;
     private TianDiTuLayer cva_c;
+    private CustomDataSource dataSource;
+    private LocationManager locationManager;
     private LocationDisplay mLocationDisplay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tianditu);
-
         int[] tdtLayers = getIntent().getIntArrayExtra("TIANDITU_LAYERS");
         if ((tdtLayers == null) || (tdtLayers.length == 0)) {
             tdtLayers = new int[]{0, 1};
@@ -63,6 +74,8 @@ public class TianDiTuActivity extends AppCompatActivity {
         mMapView.setMap(map);
 
         mLocationDisplay = mMapView.getLocationDisplay();
+        //dataSource = new CustomDataSource();
+        //mLocationDisplay.setLocationDataSource(dataSource);
         mLocationDisplay.addDataSourceStatusChangedListener(dataSourceStatusChangedEvent -> {
             if (dataSourceStatusChangedEvent.isStarted() || dataSourceStatusChangedEvent.getError() == null) {
                 return;
@@ -80,6 +93,55 @@ public class TianDiTuActivity extends AppCompatActivity {
         });
         mLocationDisplay.setAutoPanMode(LocationDisplay.AutoPanMode.NAVIGATION);
         mLocationDisplay.startAsync();
+        //dataSource.startAsync();
+        //initGPS();
+    }
+
+    private void initGPS() {
+        //获取LocationManager
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        Criteria criteria = new Criteria();
+        //低精度，如果设置为高精度，依然获取不了location。
+        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+        //要求海拔
+        criteria.setAltitudeRequired(true);
+        //要求方位
+        criteria.setBearingRequired(true);
+        //允许有花费
+        criteria.setCostAllowed(true);
+        //低功耗
+        criteria.setPowerRequirement(Criteria.POWER_LOW);
+        String provider = null;
+        // 获取所有可用的位置提供器
+        List<String> providerList = locationManager.getProviders(true);
+        if (providerList.contains(LocationManager.GPS_PROVIDER)) {
+            provider = LocationManager.GPS_PROVIDER;
+        } else if (providerList.contains(LocationManager.NETWORK_PROVIDER)) {
+            provider = LocationManager.NETWORK_PROVIDER;
+        } else {
+            // 获取最好的定位方式,true 代表从打开的设备中查找
+            provider = locationManager.getBestProvider(criteria, true);
+        }
+        // 当没有可用的位置提供器时，弹出Toast提示用户
+        if (provider == null || provider.trim().length() == 0) {
+            Toast.makeText(this, "请打开您的GPS或定位服务", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        Location location = locationManager.getLastKnownLocation(provider);
+        broadcast(location);
+        locationManager.requestLocationUpdates(provider, 1000, 1, locationListener);
+    }
+
+    private void broadcast(Location location) {
+        if (location != null && dataSource != null) {
+            LocationDataSource.Location agLocation = new LocationDataSource.Location(
+                new Point(location.getLongitude(), location.getLatitude(), SpatialReference.create(4326))
+            );
+            dataSource.changeLocation(agLocation);
+        }
     }
 
     @Override
@@ -99,5 +161,25 @@ public class TianDiTuActivity extends AppCompatActivity {
         mMapView.dispose();
         super.onDestroy();
     }
+
+    LocationListener locationListener = new LocationListener() {
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+        }
+
+        @Override
+        public void onLocationChanged(Location location) {
+            // 更新当前设备的位置信息
+            broadcast(location);
+        }
+    };
 
 }

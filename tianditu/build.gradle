@@ -2,7 +2,6 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 28
-
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 28
@@ -10,7 +9,6 @@ android {
         versionName "2.1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -18,7 +16,6 @@ android {
     lintOptions {
         abortOnError false
     }
-
     buildTypes {
         release {
             minifyEnabled true
@@ -26,7 +23,6 @@ android {
         }
     }
 }
-
 dependencies {
     api fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
 }
