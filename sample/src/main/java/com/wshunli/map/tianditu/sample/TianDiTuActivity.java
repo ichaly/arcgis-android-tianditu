@@ -23,6 +23,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -30,13 +31,18 @@ import androidx.core.content.ContextCompat;
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.geometry.SpatialReference;
+import com.esri.arcgisruntime.layers.FeatureLayer;
+import com.esri.arcgisruntime.loadable.LoadStatus;
 import com.esri.arcgisruntime.location.LocationDataSource;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
+import com.esri.arcgisruntime.mapping.LayerList;
+import com.esri.arcgisruntime.mapping.MobileMapPackage;
 import com.esri.arcgisruntime.mapping.view.LocationDisplay;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.wshunli.map.tianditu.TianDiTuLayer;
 import com.wshunli.map.tianditu.TianDiTuLayerBuilder;
 
+import java.io.File;
 import java.util.List;
 
 public class TianDiTuActivity extends AppCompatActivity {
@@ -95,6 +101,23 @@ public class TianDiTuActivity extends AppCompatActivity {
         mLocationDisplay.startAsync();
         //dataSource.startAsync();
         //initGPS();
+
+        loadMapPkage();
+    }
+
+    private void loadMapPkage() {
+        String mainMMPKPath = Environment.getExternalStorageDirectory()+"/ArcGIS/SanFrancisco.mmpk";
+        File mmpk = new File(mainMMPKPath);
+        final MobileMapPackage mainMobileMapPackage = new MobileMapPackage(mainMMPKPath);
+        mainMobileMapPackage.loadAsync();
+        mainMobileMapPackage.addDoneLoadingListener(() -> {
+            LoadStatus mainLoadStatus = mainMobileMapPackage.getLoadStatus();
+            if (mainLoadStatus == LoadStatus.LOADED) {
+                List<ArcGISMap> mainArcGISMapL = mainMobileMapPackage.getMaps();
+                ArcGISMap mainArcGISMapMMPK = mainArcGISMapL.get(0);
+                mMapView.setMap(mainArcGISMapMMPK);
+            }
+        });
     }
 
     private void initGPS() {
