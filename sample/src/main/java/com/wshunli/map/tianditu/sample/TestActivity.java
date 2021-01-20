@@ -27,7 +27,8 @@ public class TestActivity extends AppCompatActivity {
 
         //[DocRef: Name=Open Mobile Map Package-android, Category=Work with maps, Topic=Create an offline map]
         // create the mobile map package
-        String mainMMPKPath = Environment.getExternalStorageDirectory()+"/ArcGIS/river_test01.mmpk";
+        //String mainMMPKPath = Environment.getExternalStorageDirectory()+"/ArcGIS/SanFrancisco.mmpk";
+        String mainMMPKPath = Environment.getExternalStorageDirectory()+"/ArcGIS/123r.mmpk";
         mMapPackage = new MobileMapPackage(mainMMPKPath);
         // load the mobile map package asynchronously
         mMapPackage.loadAsync();
